@@ -1,7 +1,3 @@
-/**
- * Rutas de Productos
- */
-
 import { Router } from "express";
 import prisma from "../lib/prisma";
 
@@ -66,6 +62,12 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ ok: false, error: e.message || "Error al obtener producto" });
   }
 });
+
+router.post("/addProduct")
+
+router.put("/updateStock")
+
+router.delete("/deleteProduct")
 
 export default router;
 

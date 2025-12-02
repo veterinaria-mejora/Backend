@@ -2,7 +2,6 @@
 // Prisma Configuration
 // =====================
 
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -17,19 +16,21 @@ generator client {
 // =====================
 
 model users {
-  idusuario       Int               @id @default(autoincrement())
-  name            String?
-  lastname        String?
-  email           String            @unique
-  password_hash   String
-  role            String            @default("user")
-  created_at      DateTime          @default(now())
+  idusuario     Int      @id @default(autoincrement())
+  name          String?
+  lastname      String?
+  email         String   @unique
+  password_hash String
+  role          String   @default("user")
+  created_at    DateTime @default(now())
 
   // relations
   animales        animal[]          @relation("UserAnimales")
   password_resets password_resets[]
-  cart_items  cart_item[]
-  orders      order[]
+  cart_items      cart_item[]
+  orders          order[]
+
+  regconsults     consultas[]       @relation("UserConsultas")
 
   @@map("users")
 }
@@ -55,7 +56,7 @@ model password_resets {
 // =====================
 
 model formulario {
-  idformulario                 Int    @id @default(autoincrement())
+  idformulario                 Int     @id @default(autoincrement())
   nombre                       String?
   apellido                     String?
   telefono                     Int?
@@ -93,15 +94,15 @@ model formulario {
 // =====================
 
 model productos {
-  idproducto Int       @id @default(autoincrement())
+  idproducto Int     @id @default(autoincrement())
   nombre     String?
   url_imagen String?
   stock      Int
   precio     Float   @default(0)
 
   // relations
-  compras    compra[]
-  cart_items cart_item[]
+  compras     compra[]
+  cart_items  cart_item[]
   order_items order_item[]
 
   @@map("productos")
@@ -112,7 +113,7 @@ model productos {
 // =====================
 
 model compra {
-  idcompra Int @id @default(autoincrement())
+  idcompra Int  @id @default(autoincrement())
   producto Int?
   unidades Int?
   precio   Int?
@@ -130,53 +131,20 @@ model compra {
 model animal {
   idanimal    Int      @id @default(autoincrement())
   nombre      String?
+  tipo        String?
+  raza        String?
   edad        Int?
   descripcion String?
   imagen_m    String?
-  dueno       Int?      @map("dueño")
-  perfilId    Int?
+  adoptable   Boolean? @default(true)
+  dueño      Int?
 
   // relations
-  duenoRef    users?             @relation("UserAnimales", fields: [dueno], references: [idusuario], onDelete: SetNull)
-  perfil      perfil?            @relation(fields: [perfilId], references: [idperfil], onDelete: SetNull)
-  turnos      turno[]
+  perfilId    Int?
+  usuario     users?             @relation("UserAnimales", fields: [dueño], references: [idusuario])
   historiales historial_medico[] @relation("AnimalHistorial")
 
   @@map("animal")
-}
-
-// =====================
-// APPOINTMENTS (TURNOS)
-// =====================
-
-model turno {
-  idturno Int    @id @default(autoincrement())
-  mascota Int?
-  motivo  String?
-  fecha   String?
-  estado  String
-
-  mascotaRef animal? @relation(fields: [mascota], references: [idanimal], onDelete: SetNull)
-
-  @@map("turno")
-}
-
-// =====================
-// PROFILES
-// =====================
-
-model perfil {
-  idperfil  Int         @id @default(autoincrement())
-  nombre    String?
-  apellido  String?
-  telefono  Int?
-  mail      String?
-
-  // relations
-  mascotas  animal[]
-  consultas consultas[]
-
-  @@map("perfil")
 }
 
 // =====================
@@ -184,11 +152,11 @@ model perfil {
 // =====================
 
 model consultas {
-  idconsulta  Int     @id @default(autoincrement())
-  nombre      Int?
+  idconsulta  Int      @id @default(autoincrement())
   descripcion String?
 
-  perfilRef perfil? @relation(fields: [nombre], references: [idperfil], onDelete: SetNull)
+  idusuario   Int?
+  usuario     users?   @relation("UserConsultas", fields: [idusuario], references: [idusuario], onDelete: SetNull)
 
   @@map("consultas")
 }
@@ -212,60 +180,40 @@ model historial_medico {
 // BACKEND EXTRA MODELS
 // =====================
 
-model pet {
-  id        String   @id
-  nombre    String
-  especie   String
-  foto      String?
-  adoptable Boolean  @default(true)
-  createdAt DateTime @default(now())
-
-  @@map("pets")
-}
-
-model appointment {
-  id      String   @id
-  userId  Int?
-  petId   String?
-  motivo  String
-  fecha   DateTime @default(now())
-
-  @@map("appointments")
-}
-
 model coupon {
-  id     Int    @id @default(autoincrement())
-  code   String @unique
+  id     Int     @id @default(autoincrement())
+  code   String  @unique
   active Boolean @default(true)
 
   @@map("coupons")
 }
+
 model cart_item {
-  id         Int @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   user_id    Int
   product_id Int
-  quantity   Int @default(1)
+  quantity   Int      @default(1)
   created_at DateTime @default(now())
 
-  user       users     @relation(fields: [user_id], references: [idusuario], onDelete: Cascade)
-  product    productos @relation(fields: [product_id], references: [idproducto], onDelete: Cascade)
+  user    users     @relation(fields: [user_id], references: [idusuario], onDelete: Cascade)
+  product productos @relation(fields: [product_id], references: [idproducto], onDelete: Cascade)
 
   @@unique([user_id, product_id])
   @@map("cart_items")
 }
 
 model order {
-  id              Int      @id @default(autoincrement())
-  user_id         Int
-  total_amount    Float
-  status          String   @default("pending")
-  payment_id      String?
-  payment_status  String?
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  total_amount   Float
+  status         String   @default("pending")
+  payment_id     String?
+  payment_status String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
-  user            users       @relation(fields: [user_id], references: [idusuario], onDelete: Cascade)
-  order_items     order_item[]
+  user        users        @relation(fields: [user_id], references: [idusuario], onDelete: Cascade)
+  order_items order_item[]
 
   @@map("orders")
 }
@@ -277,8 +225,8 @@ model order_item {
   quantity   Int
   price      Float
 
-  order      order     @relation(fields: [order_id], references: [id], onDelete: Cascade)
-  product    productos @relation(fields: [product_id], references: [idproducto], onDelete: Cascade)
+  order   order     @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product productos @relation(fields: [product_id], references: [idproducto], onDelete: Cascade)
 
   @@map("order_items")
 }

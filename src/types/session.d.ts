@@ -3,7 +3,7 @@ import type { SessionData } from "express-session";
 
 declare module "express-session" {
     interface SessionData {
-        idusuario: number;
+        idusuario: number | string;
         userEmail: string;
     }
 }

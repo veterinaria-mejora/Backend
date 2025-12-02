@@ -14,12 +14,11 @@ import routerauth from "./routes/Auth/authRoutes";
 import productsRouter from "./routes/products";
 import cartRouter from "./routes/cart";
 import couponsRouter from "./routes/coupons";
-import petsRouter from "./routes/pets";
-import appointmentsRouter from "./routes/appointments";
+import petsRouter from "./routes/animales";
 import paymentsRouter from "./routes/payments";
 import formulariosRouter from "./routes/formularios";
 
-dotenv.config();
+dotenv.config()
 
 async function initAuthSchema() {
     try {
@@ -31,7 +30,7 @@ async function initAuthSchema() {
     }
 }
 
-const app = express();
+const app = express()
 const PORT = Number(process.env.PORT)
 const SESSION_SECRET = process.env.SESSION_SECRET
 
@@ -53,24 +52,21 @@ app.use(session({
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 24 * 7, httpOnly: true, sameSite: "lax", secure: false }
   })
-);
+)
 
-// Rutas de API (modulares)
 app.use("/backend/user", routerauth)
-app.use("/backend/products", productsRouter);
-app.use("/backend/cart", cartRouter);
+app.use("/backend/pets", petsRouter)
+app.use("/backend/products", productsRouter)
+app.use("/backend/form", formulariosRouter);
+
 app.use("/backend/coupons", couponsRouter);
-app.use("/backend/pets", petsRouter);
-app.use("/backend/appointments", appointmentsRouter);
+app.use("/backend/cart", cartRouter);
 app.use("/backend/payments", paymentsRouter);
-app.use("/backend/formularios", formulariosRouter);
 
 
 // Inicializar servidor
 initAuthSchema().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 Servidor iniciado en http://localhost:${PORT}`);
-    console.log(`📁 Frontend disponible en /frontend`);
-    console.log(`🔌 API disponible en /api`);
   });
 });

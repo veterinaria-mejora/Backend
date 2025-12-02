@@ -1,9 +1,11 @@
 import { Router } from "express";
 import prisma from "../lib/prisma";
+import { error } from "console";
+import { ok } from "assert";
 
 const router = Router();
 
-// GET /api/products - Obtener todos los productos
+// -- obtiene todos los productos existentes
 router.get("/", async (_req, res) => {
   try {
     const products = await prisma.productos.findMany({
@@ -30,44 +32,82 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// GET /api/products/:id - Obtener un producto por ID
-router.get("/:id", async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const product = await prisma.productos.findUnique({
-      where: { idproducto: id },
-      select: {
-        idproducto: true,
-        nombre: true,
-        precio: true,
-        stock: true,
-        url_imagen: true
-      }
-    });
+//añade productos a la base de datos
+router.post("/addProduct", async (req,res)=>{
+    const {idproducto, nombre, precio, stock, url_imagen} = req.body
+    try {
+    const exist = await prisma.productos.findUnique({
+        where: {idproducto : idproducto }
+    })
+    if (exist) throw new Error("Producto ya añadido")
     
-    if (!product) {
-      return res.status(404).json({ ok: false, error: "Producto no encontrado" });
+    const add = await prisma.productos.create({
+        data:{
+            idproducto:idproducto,
+            nombre:nombre,
+            precio:precio,
+            stock:stock,
+            url_imagen:url_imagen
+        },
+        select:{
+            idproducto:true,
+            nombre:true
+        }
+    })
+    
+    if (!add) throw new Error("error añadiendo producto")
+
+    res.status(201).json( {ok:false, message:"se ha añadido el producto con exito", data: add})
+
+    } catch (e:any) {
+        res.status(400).json( {ok:false, error:e.message})
     }
     
-    const formattedProduct = {
-      id: product.idproducto,
-      nombre: product.nombre,
-      precio: product.precio,
-      stock: product.stock,
-      url_imagen: product.url_imagen
-    };
-    
-    res.json({ ok: true, data: formattedProduct });
-  } catch (e: any) {
-    res.status(500).json({ ok: false, error: e.message || "Error al obtener producto" });
-  }
-});
 
-router.post("/addProduct")
+})
 
-router.put("/updateStock")
+// -- actualiza el stock de un producto especifico
+router.put("/updateStock/:id", async (req,res)=>{
+    const id = Number(req.params.id)
+    const newStock = req.body.stock
 
-router.delete("/deleteProduct")
+    try {
+        const exist = await prisma.productos.update({
+        where: {idproducto:id},
+        data:{stock:newStock},
+        select:{
+            idproducto:true,
+            stock:true
+        }
+    })
+    res.status(200).json({ ok:true, data:exist })
+    } catch (e:any) {
+        if (e.code === "P2025") {
+        return res.status(404).json({ ok: false, error: "Producto no encontrado" });
+    }
+    return res.status(500).json({ ok: false, error: "Error actualizando" });
+    }
+})
+
+// -- Elimina un producto de la abse de datos.
+router.delete("/deleteProduct/:id", async (req,res)=>{
+    const id = Number(req.params.id)
+    try {
+        const deleted = await prisma.productos.delete({
+            where:{idproducto:id},
+            select:{
+                idproducto:true
+            }
+        })
+        
+        return res.status(200).json({ok:true, data:deleted})
+    } catch (e:any) {
+        if (e.code === "P2025") {
+        return res.status(404).json({ ok: false, error: "Producto no encontrado" });
+    }
+    return res.status(500).json({ ok: false, error: "Error actualizando" });
+    }
+})
 
 export default router;
 

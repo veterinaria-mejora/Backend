@@ -1,4 +1,3 @@
-
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import  prisma  from "../../lib/prisma";
@@ -26,7 +25,7 @@ export async function registerUser(input: {name?: string;  lastname?: string;  e
         },
         select: {
         idusuario: true,
-        email: true,
+        email: true
         },
     })
 

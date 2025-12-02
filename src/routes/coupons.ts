@@ -1,85 +1,47 @@
-/**
- * Rutas de Cupones - Usando Prisma
- */
-
-import { Router } from "express";
-import  prisma  from "../lib/prisma";
+import { Router } from "express"
+import  prisma  from "../lib/prisma"
 
 const router = Router();
 
-// GET /api/coupons - Obtener todos los cupones activos
-router.get("/", async (_req, res) => {
+// -- devuelve todos los cupones activos
+router.get("/all", async (_req, res) => {
   try {
     const cupones = await prisma.coupon.findMany({
       where: { active: true },
       select: { code: true },
     });
-    
-    const codes = cupones.map((c) => c.code);
-    
-    // Si no hay cupones, retornar los por defecto
-    if (codes.length === 0) {
-      return res.json({ ok: true, data: ["vte10", "perro"] });
+    console.log(cupones)
+    const codes = cupones.map((c,i) => ({[i]:c.code}))
+    console.log(codes)
+    if (codes.length == 0) {
+      return res.json({ ok: true, data: [] })
     }
     
-    res.json({ ok: true, data: codes });
-  } catch {
-    // Si hay error (tabla no existe), retornar cupones por defecto
-    res.json({ ok: true, data: ["vte10", "perro"] });
-  }
-});
+    res.json({ ok: true, data: codes })
+  } catch(e:any){
 
-// POST /api/coupons/validate - Validar un cupón
-router.post("/validate", async (req, res) => {
+    res.json({ ok: false, error:e })
+  }
+})
+
+// -- añade un cupon inexistente
+router.post("/add", async (req, res) => {
   try {
     const { code } = req.body;
     
-    if (!code) {
+    if (!code || typeof code !== "string") {
       return res.status(400).json({ ok: false, error: "Código de cupón requerido" });
     }
 
     try {
-      const cupon = await prisma.coupon.findFirst({
-        where: {
-          code: code.trim().toLowerCase(),
-          active: true,
-        },
-      });
-      
-      if (cupon) {
-        return res.json({ ok: true, data: { valid: true, discount: 20 } });
-      }
-    } catch {
-      // Si la tabla no existe, validar contra cupones por defecto
-      const defaultCoupons = ["vte10", "perro"];
-      if (defaultCoupons.includes(code.trim().toLowerCase())) {
-        return res.json({ ok: true, data: { valid: true, discount: 20 } });
-      }
-    }
-
-    res.json({ ok: true, data: { valid: false, discount: 0 } });
-  } catch (e: any) {
-    res.status(500).json({ ok: false, error: e.message || "Error al validar cupón" });
-  }
-});
-
-// POST /api/coupons - Crear un nuevo cupón
-router.post("/", async (req, res) => {
-  try {
-    const { code } = req.body;
-    
-    if (!code) {
-      return res.status(400).json({ ok: false, error: "Código de cupón requerido" });
-    }
-
-    try {
-      await prisma.coupon.create({
+      const coupon = await prisma.coupon.create({
         data: {
           code: code.trim().toLowerCase(),
         },
+        select:{code:true}
       });
       
-      res.json({ ok: true, message: "Cupón creado correctamente" });
+      res.json({ ok: true, message: "Cupón creado correctamente", data:coupon });
     } catch (e: any) {
       if (e.code === "P2002") {
         return res.status(400).json({ ok: false, error: "El cupón ya existe" });
@@ -89,31 +51,31 @@ router.post("/", async (req, res) => {
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e.message || "Error al crear cupón" });
   }
-});
+})
 
-// DELETE /api/coupons/:code - Eliminar (desactivar) un cupón
-router.delete("/:code", async (req, res) => {
-  try {
-    const code = decodeURIComponent(req.params.code);
-    
-    const result = await prisma.coupon.updateMany({
-      where: {
-        code: code.trim().toLowerCase(),
-        active: true,
-      },
-      data: {
-        active: false,
-      },
-    });
-    
-    if (result.count === 0) {
-      return res.status(404).json({ ok: false, error: "Cupón no encontrado" });
+// -- desactiva el cupon 
+router.patch("/:code", async (req, res) => {
+    try {
+        const code = decodeURIComponent(req.params.code).trim().toLowerCase();
+
+        const result = await prisma.coupon.updateMany({
+            where: {
+                code: code,
+                active: true,
+            },
+            data: {
+                active: false,
+            },
+        });
+
+        if (result.count === 0) {
+            return res.status(404).json({ ok: false, error: "Cupón no encontrado o ya inactivo" });
+        }
+
+        return res.json({ ok: true, message: "Cupón eliminado correctamente" });
+    } catch (e: any) {
+        return res.status(500).json({ ok: false, error: e.message || "Error al eliminar cupón" });
     }
-    
-    res.json({ ok: true, message: "Cupón eliminado correctamente" });
-  } catch (e: any) {
-    res.status(500).json({ ok: false, error: e.message || "Error al eliminar cupón" });
-  }
-});
+})
 
 export default router;

@@ -1,9 +1,7 @@
-import { Router } from "express";
-import prisma from "../lib/prisma";
-import { error } from "console";
-import { ok } from "assert";
+import { Router } from "express"
+import prisma from "../lib/prisma"
 
-const router = Router();
+const router = Router()
 
 // -- obtiene todos los productos existentes
 router.get("/", async (_req, res) => {
@@ -30,7 +28,7 @@ router.get("/", async (_req, res) => {
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e.message || "Error al obtener productos" });
   }
-});
+})
 
 //añade productos a la base de datos
 router.post("/addProduct", async (req,res)=>{

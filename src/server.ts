@@ -3,7 +3,6 @@ import connectPgSimple from "connect-pg-simple"
 const session = require("express-session")
 import cors from "cors"
 import dotenv from "dotenv"
-import path from "path"
 import prisma from "./lib/prisma"
 import cookieParser from "cookie-parser";
 
@@ -57,10 +56,11 @@ app.use(session({
 app.use("/backend/user", routerauth)
 app.use("/backend/pets", petsRouter)
 app.use("/backend/products", productsRouter)
-app.use("/backend/form", formulariosRouter);
-app.use("/backend/coupons", couponsRouter);
-app.use("/backend/cart", cartRouter);
-app.use("/backend/payments", paymentsRouter);
+app.use("/backend/form", formulariosRouter)
+app.use("/backend/coupons", couponsRouter)
+app.use("/backend/cart", cartRouter)
+
+app.use("/backend/payments", paymentsRouter)
 
 
 // Inicializar servidor

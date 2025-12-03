@@ -2,11 +2,9 @@ import { registerUser,  loginUser,  createResetToken,  resetPassword,  validateR
 import { sendPasswordResetEmail } from "../../services/mailer"
 import { Router } from "express"
 import prisma from "../../lib/prisma"
-import jwt from "jsonwebtoken" 
-import { ok } from "assert"
+import jwt from "jsonwebtoken"
 const router = Router()
 const APP_BASE_URL = process.env.APP_BASE_URL
-
 
 
 // -- te autentica en base a la cookie
@@ -44,7 +42,7 @@ router.get("/authMe", async (req, res) => {
     } catch (err) {
         return res.status(401).json({ ok: false, error: "token inválido" });
     }
-});
+})
 
 // -- te registra 
 router.post("/register", async (req, res) => {
@@ -52,45 +50,29 @@ router.post("/register", async (req, res) => {
 
     try {
     const user = await registerUser({ name, lastname, email, password });
-    (req.session).idusuario = user.id;
-    (req.session).userEmail = email;
-    
-    const payload = { id: user.id, email: user.email };
-
-    const token = jwt.sign(payload, process.env.JWT_SECRET!, {
-        expiresIn: "7d",
-    });
-
-    res.cookie("token", token, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  });
-
 
     res.status(201).json({ ok: true, data: { id: user.id, email } });
   } catch (e: any) {
     res.status(400).json({ ok: false, error: e.message || "error en registro" });
   }
-});
+})
 
 // -- te loguea 
 router.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body
+    try {
+        const { email, password } = req.body
 
-    const user = await loginUser(email, password);
-    (req.session as any).userId = user.id;
-    (req.session as any).userEmail = user.email;
-    
-    const token = jwt.sign({ id: user.id, email: user.email },process.env.JWT_SECRET!,{ expiresIn: "7d" });
+        const user = await loginUser(email, password);
+        (req.session as any).userId = user.id;
+        (req.session as any).userEmail = user.email;
+        
+        const token = jwt.sign({ id: user.id, email: user.email },process.env.JWT_SECRET!,{ expiresIn: "7d" });
 
-    res.cookie("auth_token", token, {httpOnly: true, sameSite: "strict", secure: false, maxAge: 1000 * 60 * 60 * 48,});
-    
-    res.status(200).json({ ok: true, data: user });
-  } catch (e: any) {
-    res.status(401).json({ ok: false, error: e.message});
+        res.cookie("auth_token", token, {httpOnly: true, sameSite: "strict", secure: false, maxAge: 1000 * 60 * 60 * 48,});
+        
+        res.status(200).json({ ok: true, data: user });
+    } catch (e: any) {
+        res.status(401).json({ ok: false, error: e.message});
   }
 });
 
@@ -100,7 +82,8 @@ router.post("/logout", (req, res) => {
     if (err) return res.status(500).json({ ok: false, error: "no se pudo cerrar sesion" });
     res.clearCookie("connect.sid")
     res.clearCookie("auth_token")
-    res.json({ ok: true });
+    res.clearCookie("token")
+    res.json({ ok: true })
   });
 });
 
@@ -114,7 +97,7 @@ router.post("/forgot-password", async (req, res) => {
          if (!APP_BASE_URL) throw new Error("APP_BASE_URL no definida")
 
         const base = APP_BASE_URL.replace(/\/$/, "");
-        const resetUrl = `${base}/frontend/vistas/login/reset.html?token=${token}`;
+        const resetUrl = `http://127.0.0.1:5500/frontend/vistas/adopciones/adopciones.html`;
         const sent = await sendPasswordResetEmail(email, token, resetUrl);
         console.log("forgot sent:", sent," ",token)
 

@@ -1,7 +1,22 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import  prisma  from "../../lib/prisma";
+import jwt from "jsonwebtoken";
 
+export function authMiddleware(req:any, res:any, next:any) {
+    const token = req.cookies.auth_token;
+    if (!token) {
+        return res.status(401).json({ error: "Falta token" });
+    }
+
+    try {
+        const data = jwt.verify(token, process.env.JWT_SECRET!);
+        req.user = data;            // acá tenés { id, email, iat, exp }
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: "Token inválido" });
+    }
+}
 
 // funcion quwe se encarga de registrar meidnate la integracion delos datos a la base de datos - 
 export async function registerUser(input: {name?: string;  lastname?: string;  email: string;  password: string}) {
@@ -78,7 +93,6 @@ export async function createResetToken(email: string) {
 
 //meramente valida el token para ver si existe en la base de datos
 export async function validateResetToken(token: string) {
-	console.log(token)
 	const row = await prisma.password_resets.findFirst({
 		where: { reset_token: token }
 	});

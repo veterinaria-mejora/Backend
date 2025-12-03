@@ -15,6 +15,7 @@ router.get("/", async (_req, res) => {
 		orderBy: { idanimal: "asc" },
 		})
 		const formatted = animales.map((p) => ({
+		id: p.idanimal,
 		nombre: p.nombre,
 		tipo: p.tipo,
 		raza: p.raza,
@@ -99,17 +100,15 @@ router.put("/updatePet/:id", async (req, res) => {
 router.delete("/deletePet/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ ok: false, error: "ID inválido" });
-    }
 
     await prisma.animal.delete({
-      where: { idanimal: id },
+		where: { idanimal: id },
     })
 
+	
     res.json({ ok: true, message: "Animal eliminado" });
-  } catch (e: any) {
-    if (e.code === "P2025") {
+} catch (e: any) {
+	if (e.code === "P2025") {
       return res.status(404).json({ ok: false, error: "Animal no encontrado" });
     }
     res.status(400).json({ ok: false, error: e.message || "Error al eliminar animal" });

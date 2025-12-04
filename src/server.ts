@@ -35,11 +35,27 @@ const SESSION_SECRET = process.env.SESSION_SECRET
 
 const PgSession = connectPgSimple(session);
 
+const allowedOrigins = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost:5173",  
+    "http://yourdomain.com"
+];
+
 // Middlewares
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Origen no permitido por CORS: " + origin));
+        }
+    },
+    credentials: true
+}))
+app.use(express.json())
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieParser())
 app.use(session({
     store: new PgSession({
       conString: process.env.DATABASE_URL,

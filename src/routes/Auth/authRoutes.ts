@@ -9,8 +9,8 @@ const APP_BASE_URL = process.env.APP_BASE_URL
 
 // -- te autentica en base a la cookie
 router.get("/authMe", async (req, res) => {
-    const token = req.cookies?.auth_token;
-
+    const token = req.cookies.auth_token;
+    console.log(token)
     if (!token) {
         return res.status(401).json({ ok: false, error: "no autenticado" });
     }
@@ -61,20 +61,20 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body
-
+        console.log(email,password)
         const user = await loginUser(email, password);
         (req.session as any).userId = user.id;
         (req.session as any).userEmail = user.email;
         
         const token = jwt.sign({ id: user.id, email: user.email },process.env.JWT_SECRET!,{ expiresIn: "7d" });
 
-        res.cookie("auth_token", token, {httpOnly: true, sameSite: "strict", secure: false, maxAge: 1000 * 60 * 60 * 48,});
+        res.cookie("auth_token", token, {httpOnly: true, sameSite: "none", secure: true, maxAge: 1000 * 60 * 60 * 48,});
         
         res.status(200).json({ ok: true, data: user });
     } catch (e: any) {
         res.status(401).json({ ok: false, error: e.message});
   }
-});
+})
 
 // -- elimina los tokens para la persistencia de sesion 
 router.post("/logout", (req, res) => {

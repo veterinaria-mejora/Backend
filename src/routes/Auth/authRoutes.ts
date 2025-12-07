@@ -51,8 +51,10 @@ router.post("/register", async (req, res) => {
     try {
     const user = await registerUser({ name, lastname, email, password });
 
-    res.status(201).json({ ok: true, data: { id: user.id, email } });
+    res.status(200).json({ ok: true, data: { id: user.id, email } });
   } catch (e: any) {
+    console.log(e)
+    console.log("askdjasjkdhajksdhkajsh")
     res.status(400).json({ ok: false, error: e.message || "error en registro" });
   }
 })

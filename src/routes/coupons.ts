@@ -1,5 +1,6 @@
 import { Router } from "express"
 import  prisma  from "../lib/prisma"
+import { ok } from "assert";
 
 const router = Router();
 
@@ -22,6 +23,28 @@ router.get("/all", async (_req, res) => {
 
     res.json({ ok: false, error:e })
   }
+})
+
+router.patch("/use",async (req,res)=>{
+    try {
+        const {coupon} = req.body
+        const validate = await prisma.coupon.findUnique(
+            {
+                where: {code:coupon,active:true}
+            }
+        )
+        const newstate =await prisma.coupon.update({
+            where:{code:coupon},
+            data:{active:false},
+            select:{
+                code:true,
+                active:true
+            }
+        })
+        return res.json({ ok: true, data: {validate, newstate} })
+    } catch (error) {
+        return res.json({ok:false, error:"cupon invalido"})
+    }
 })
 
 // -- añade un cupon inexistente

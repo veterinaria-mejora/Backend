@@ -49,17 +49,21 @@ router.get("/", async (_req, res) => {
   try {
     const users = await prisma.users.findMany({
       select: {
+        idusuario: true,
         name: true,
         lastname: true,
-        email: true
+        email: true,
+        role: true
       },
       orderBy: { idusuario: "asc" }
     });
 
     const formatted = users.map(u => ({
+      id: u.idusuario,
       nombre: u.name,
       apellido: u.lastname,
-      email: u.email
+      email: u.email,
+      role: u.role
     }));
 
     res.json({ ok: true, data: formatted });

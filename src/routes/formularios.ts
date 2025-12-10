@@ -1,7 +1,7 @@
-import { Router } from "express";
-import prisma from "../lib/prisma";
+import { Router } from "express"
+import prisma from "../lib/prisma"
 
-const router = Router();
+const router = Router()
 
 // -- obtenes todos los formularios
 router.get("/", async (_req, res) => {
@@ -109,4 +109,4 @@ router.delete("/:id", async (req, res) => {
     }
 })
 
-export default router;
+export default router

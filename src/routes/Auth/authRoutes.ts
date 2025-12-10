@@ -68,7 +68,6 @@ router.get("/", async (_req, res) => {
   }
 });
 
-
 // -- te registra 
 router.post("/register", async (req, res) => {
     const { name, lastname, email, password } = req.body
@@ -82,6 +81,37 @@ router.post("/register", async (req, res) => {
     console.log("askdjasjkdhajksdhkajsh")
     res.status(400).json({ ok: false, error: e.message || "error en registro" });
   }
+})
+// elimina a el usuario
+router.delete("/delete/:id", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const userId = parseInt(id);
+
+        await prisma.password_resets.deleteMany({
+            where: { user_id: userId }
+        });
+
+        await prisma.animal.deleteMany({
+            where: { dueño: userId }
+        });
+
+        await prisma.consultas.deleteMany({
+            where: { idusuario: userId }
+        });
+
+
+        const deleted = await prisma.users.delete({
+            where: { idusuario: userId }
+        });
+
+        return res.json({ ok: true, data: deleted });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(400).json({ ok: false, error: "No se pudo eliminar el usuario" });
+    }
 })
 
 // -- te loguea 

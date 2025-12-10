@@ -1,10 +1,8 @@
+import { Router } from "express"
+import prisma from "../lib/prisma"
+import { authMiddleware } from "./Auth/authFunctions"
 
-import { Router } from "express";
-import prisma from "../lib/prisma";
-import { authMiddleware } from "./Auth/authFunctions";
-
-const router = Router();
-
+const router = Router()
 
 // obtener los productos guardados al carrito
 router.get("/", authMiddleware, async (req: any, res) => {
@@ -38,7 +36,7 @@ router.get("/", authMiddleware, async (req: any, res) => {
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e.message || "Error al obtener carrito" });
   }
-});
+})
 
 // añadir productos al carrito
 router.post("/add", authMiddleware,async (req: any, res) => {
@@ -91,7 +89,7 @@ router.post("/add", authMiddleware,async (req: any, res) => {
     } catch (e: any) {
         res.status(500).json({ ok: false, error: e.message || "Error al agregar al carrito" });
     }
-});
+})
 
 // elimina un elemento seleccionado / saca su stock
 router.delete("/delete/:id",authMiddleware, async (req: any, res) => {
@@ -158,7 +156,7 @@ router.delete("/delete/:id",authMiddleware, async (req: any, res) => {
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e.message || "Error al eliminar del carrito" });
   }
-});
+})
 
 // DELETE /api/cart - Vaciar carrito
 router.delete("/",authMiddleware,  async (req: any, res) => {
@@ -175,7 +173,7 @@ router.delete("/",authMiddleware,  async (req: any, res) => {
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e.message || "Error al vaciar carrito" });
   }
-});
+})
 
-export default router;
+export default router
 

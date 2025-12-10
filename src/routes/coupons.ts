@@ -1,6 +1,5 @@
 import { Router } from "express"
 import  prisma  from "../lib/prisma"
-import { ok } from "assert";
 
 const router = Router();
 
@@ -15,7 +14,7 @@ router.get("/all", async (_req, res) => {
     const codes = cupones.map((c,i) => ({[i]:c.code}))
     console.log(codes)
     if (codes.length == 0) {
-      return res.json({ ok: true, data: [] })
+      return res.json({ ok: true, data: codes })
     }
     
     res.json({ ok: true, data: codes })
@@ -24,23 +23,26 @@ router.get("/all", async (_req, res) => {
     res.json({ ok: false, error:e })
   }
 })
-
+// -- permite usar un cupon
 router.patch("/use",async (req,res)=>{
     try {
         const {coupon} = req.body
-        const validate = await prisma.coupon.findUnique(
-            {
-                where: {code:coupon,active:true}
+        const validate = await prisma.coupon.findFirst({
+            where: {
+                code: coupon,
+                active: true
             }
-        )
-        const newstate =await prisma.coupon.update({
-            where:{code:coupon},
-            data:{active:false},
-            select:{
-                code:true,
-                active:true
-            }
+        });
+
+        if (!validate) {
+            return res.json({ ok: false, error: "Cupón inválido o ya ut ilizado" });
+        } 
+        const newstate = await prisma.coupon.update({
+            where: { code: coupon },
+            data: { active: false },
+            select: { code: true, active: true }
         })
+
         return res.json({ ok: true, data: {validate, newstate} })
     } catch (error) {
         return res.json({ok:false, error:"cupon invalido"})
@@ -74,31 +76,6 @@ router.post("/add", async (req, res) => {
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e.message || "Error al crear cupón" });
   }
-})
-
-// -- desactiva el cupon 
-router.patch("/:code", async (req, res) => {
-    try {
-        const code = decodeURIComponent(req.params.code).trim().toLowerCase();
-
-        const result = await prisma.coupon.updateMany({
-            where: {
-                code: code,
-                active: true,
-            },
-            data: {
-                active: false,
-            },
-        });
-
-        if (result.count === 0) {
-            return res.status(404).json({ ok: false, error: "Cupón no encontrado o ya inactivo" });
-        }
-
-        return res.json({ ok: true, message: "Cupón eliminado correctamente" });
-    } catch (e: any) {
-        return res.status(500).json({ ok: false, error: e.message || "Error al eliminar cupón" });
-    }
 })
 
 export default router;

@@ -1,7 +1,7 @@
-import bcrypt from "bcrypt";
-import crypto from "crypto";
-import  prisma  from "../../lib/prisma";
-import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt"
+import crypto from "crypto"
+import  prisma  from "../../lib/prisma"
+import jwt from "jsonwebtoken"
 
 export function authMiddleware(req:any, res:any, next:any) {
     const token = req.cookies.auth_token;

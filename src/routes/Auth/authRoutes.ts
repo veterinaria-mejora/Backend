@@ -44,6 +44,31 @@ router.get("/authMe", async (req, res) => {
     }
 })
 
+// -- obtiene los usuarios.
+router.get("/", async (_req, res) => {
+  try {
+    const users = await prisma.users.findMany({
+      select: {
+        name: true,
+        lastname: true,
+        email: true
+      },
+      orderBy: { idusuario: "asc" }
+    });
+
+    const formatted = users.map(u => ({
+      nombre: u.name,
+      apellido: u.lastname,
+      email: u.email
+    }));
+
+    res.json({ ok: true, data: formatted });
+  } catch (e: any) {
+    res.status(500).json({ ok: false, error: e.message || "Error al obtener usuarios" });
+  }
+});
+
+
 // -- te registra 
 router.post("/register", async (req, res) => {
     const { name, lastname, email, password } = req.body

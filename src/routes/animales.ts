@@ -56,45 +56,66 @@ router.post("/addPet", async (req, res) => {
 	}
 })
 
-// -- actualiza cualquier dato ingresado
 router.put("/updatePet/:id", async (req, res) => {
+  const id = Number(req.params.id);
+
+  if (Number.isNaN(id)) {
+    res.status(400).json({
+      ok: false,
+      error: "ID inválido",
+    });
+    return;
+  }
+
+  const {
+    nombre,
+    tipo,
+    raza,
+    edad,
+    descripcion,
+    imagen_m,
+    adoptable,
+  } = req.body;
+
   try {
-    const id = parseInt(req.params.id);
-
-	const { nombre, tipo, raza, edad, descripcion, imagen_m, adoptable } = req.body;
-
-	const valid = await prisma.animal.findUnique({
-		where:{ idanimal:id },
-		select:{
-			dueño:true
-		}
-	})
-
-    if (isNaN(id) || valid) {
-      return res.status(400).json({ ok: false, error: "ID inválido" });
-    }
-
     const animal = await prisma.animal.update({
       where: { idanimal: id },
       data: {
-			nombre:nombre,
-			tipo:tipo,
-			raza:raza,
-			edad: edad,
-			descripcion: descripcion ,
-			imagen_m: imagen_m,
-			adoptable:adoptable ,
-			dueño: valid,
-		},
+        ...(nombre !== undefined && { nombre }),
+        ...(tipo !== undefined && { tipo }),
+        ...(raza !== undefined && { raza }),
+        ...(edad !== undefined && { edad: Number(edad) }),
+        ...(descripcion !== undefined && { descripcion }),
+        ...(imagen_m !== undefined && { imagen_m }),
+        ...(adoptable !== undefined && { adoptable }),
+      },
     });
-    res.json({ ok: true, animal });
-  } catch (e: any) {
-    if (e.code === "P2025") {
-      return res.status(404).json({ ok: false, error: "Animal no encontrado" });
+
+    res.json({
+      ok: true,
+      animal,
+    });
+  } catch (error) {
+    // Prisma error: record not found
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as any).code === "P2025"
+    ) {
+      res.status(404).json({
+        ok: false,
+        error: "Animal no encontrado",
+      });
+      return;
     }
-    res.status(400).json({ ok: false, error: e.message || "Error al actualizar animal" });
+
+    res.status(400).json({
+      ok: false,
+      error: "Error al actualizar animal",
+    });
   }
-})
+});
 
 // -- elimina mascotas
 router.delete("/deletePet/:id", async (req, res) => {

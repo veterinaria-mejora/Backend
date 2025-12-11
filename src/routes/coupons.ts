@@ -8,21 +8,26 @@ router.get("/all", async (_req, res) => {
   try {
     const cupones = await prisma.coupon.findMany({
       where: { active: true },
-      select: { code: true,discount:true },
+      select: {
+        code: true,
+        discount: true,
+      },
     });
-    console.log(cupones)
-    const codes = cupones.map((c,i) => ({[i]:{code:c.code,discount:c.discount}}))
-    console.log(codes)
-    if (codes.length == 0) {
-      return res.json({ ok: true, data: codes })
-    }
-    
-    res.json({ ok: true, data: codes })
-  } catch(e:any){
 
-    res.json({ ok: false, error:e })
+    res.json({
+      ok: true,
+      data: cupones,
+    });
+
+  } catch (e: any) {
+    res.status(500).json({
+      ok: false,
+      error: e.message || "Error al obtener cupones",
+    });
   }
-})
+});
+
+
 // -- permite usar un cupon
 router.patch("/use",async (req,res)=>{
     try {

@@ -34,6 +34,12 @@ router.get("/", async (_req, res) => {
 router.post("/addProduct", async (req,res)=>{
     const { nombre, precio, stock, url_imagen } = req.body
     try {
+    const producto = await prisma.productos.findFirst({
+    where: {
+        nombre: nombre
+    }})
+    
+    if (producto) throw new Error("Producto ya añadido")
         console.log(nombre,precio,stock,url_imagen)
     const add = await prisma.productos.create({
         data:{

@@ -6,9 +6,10 @@ const router = Router();
 // -- devuelve todos los cupones activos
 router.get("/all", async (_req, res) => {
   try {
+    
     const cupones = await prisma.coupon.findMany({
       where: { active: true },
-      select: { code: true,discount:true },
+      select: { code: true, discount:true },
     });
     console.log(cupones)
     const codes = cupones.map((c,i) => ({[i]:{code:c.code,discount:c.discount}}))

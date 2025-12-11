@@ -16,6 +16,7 @@ import couponsRouter from "./routes/coupons";
 import petsRouter from "./routes/animales";
 import paymentsRouter from "./routes/payments";
 import formulariosRouter from "./routes/formularios";
+import contadores from "./routes/count"
 
 dotenv.config()
 
@@ -77,6 +78,7 @@ app.use("/backend/coupons", couponsRouter)
 app.use("/backend/cart", cartRouter)
 
 app.use("/backend/payments", paymentsRouter)
+app.use("/backend/contadores", contadores)
 
 
 // Inicializar servidor

@@ -27,25 +27,27 @@ router.get("/all", async (_req, res) => {
 router.patch("/use",async (req,res)=>{
     try {
         const {coupon} = req.body
+        console.log(coupon,"aslikdjaskldjaslkdjaklsdjaklsjdklasjdkljaskldjaskldjaklsdjhkfgsdhjklfhlk ")
         const validate = await prisma.coupon.findFirst({
             where: {
                 code: coupon,
                 active: true
             }
         });
-
+        console.log(validate)
         if (!validate) {
-            return res.json({ ok: false, error: "Cupón inválido o ya ut ilizado" });
+            return res.status(400).json({ ok: false, error: "Cupón inválido o ya ulizado" });
         } 
+
         const newstate = await prisma.coupon.update({
-            where: { code: coupon },
+            where: { code: validate.code },
             data: { active: false },
             select: { code: true, active: true }
         })
 
-        return res.json({ ok: true, data: {validate, newstate} })
+        return res.status(201).json({ ok: true, data:  {validate, newstate} })
     } catch (error) {
-        return res.json({ok:false, error:"cupon invalido"})
+        return res.status(500).json({ok:false, error:"cupon invalido"})
     }
 })
 

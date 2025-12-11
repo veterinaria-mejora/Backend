@@ -136,7 +136,7 @@ model animal {
   edad        Int?
   descripcion String?
   imagen_m    String?
-  adoptable   Boolean? @default(true)
+  adoptable   Boolean? @default(false)
   dueño      Int?
 
   // relations
@@ -184,6 +184,7 @@ model coupon {
   id     Int     @id @default(autoincrement())
   code   String  @unique
   active Boolean @default(true)
+  discount Int 
 
   @@map("coupons")
 }

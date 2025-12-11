@@ -21,8 +21,8 @@ router.get("/", authMiddleware, async (req: any, res) => {
           }
         }
       }
-    });
-
+    })
+    
     const items = cartItems.map(item => ({
       id: item.product.idproducto,
       nombre: item.product.nombre,
@@ -31,7 +31,6 @@ router.get("/", authMiddleware, async (req: any, res) => {
       cantidad: item.quantity,
       stock: item.product.stock
     }));
-    console.log(items)
     res.json({ ok: true, data: { items } });
   } catch (e: any) {
     res.status(500).json({ ok: false, error: e.message || "Error al obtener carrito" });

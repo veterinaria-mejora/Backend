@@ -109,4 +109,25 @@ router.delete("/:id", async (req, res) => {
     }
 })
 
+router.put("/estado/:idformulario", async (req, res) => {
+  try {
+    const id = Number(req.params.idformulario);
+    const { estado } = req.body;
+
+    const valido = ["pendiente", "aceptado", "rechazado"];
+    if (!valido.includes(estado)) {
+      return res.status(400).json({ ok: false, error: "Estado inválido." });
+    }
+
+    const formulario = await prisma.formulario.update({
+      where: { idformulario: id },
+      data: { estado }
+    });
+
+    res.json({ ok: true, formulario });
+  } catch (e: any) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 export default router

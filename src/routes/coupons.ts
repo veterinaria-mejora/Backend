@@ -8,9 +8,8 @@ router.get("/all", async (_req, res) => {
   try {
     
     const cupones = await prisma.coupon.findMany({
-      where: { active: true },
-      select: { code: true, discount:true },
-    });
+      select: { code: true, discount:true, active:true },
+    })
 
     res.json({
       ok: true,
@@ -30,14 +29,12 @@ router.get("/all", async (_req, res) => {
 router.patch("/use",async (req,res)=>{
     try {
         const {coupon} = req.body
-        console.log(coupon,"aslikdjaskldjaslkdjaklsdjaklsjdklasjdkljaskldjaskldjaklsdjhkfgsdhjklfhlk ")
         const validate = await prisma.coupon.findFirst({
             where: {
                 code: coupon,
                 active: true
             }
-        });
-        console.log(validate)
+        })
         if (!validate) {
             return res.status(400).json({ ok: false, error: "Cupón inválido o ya ulizado" });
         } 
@@ -58,19 +55,21 @@ router.patch("/use",async (req,res)=>{
 router.post("/add", async (req, res) => {
   try {
     const { code, discount } = req.body;
-    
+    console.log(code,discount)
     if (!code || typeof code !== "string") {
       return res.status(400).json({ ok: false, error: "Código de cupón requerido" });
     }
-
+    console.log(code,discount)
+    
     try {
       const coupon = await prisma.coupon.create({
         data: {
           code: code.trim().toLowerCase(),
-          discount:discount
+          discount:parseInt(discount)
         },
         select:{code:true}
       });
+      console.log(code,discount)
       
       res.json({ ok: true, message: "Cupón creado correctamente", data:coupon });
     } catch (e: any) {
@@ -86,7 +85,7 @@ router.post("/add", async (req, res) => {
 
 router.patch("/desAbility", async (req, res) => {
     try {
-        const {code,state} = req.body
+        const {code, state} = req.body
 
         const result = await prisma.coupon.updateMany({
             where: {
@@ -98,15 +97,32 @@ router.patch("/desAbility", async (req, res) => {
             },
         });
 
-        if (result.count === 0) {
-            return res.status(404).json({ ok: false, error: "Cupón no encontrado o ya inactivo" });
-        }
-
-        return res.json({ ok: true, message: "Cupón eliminado correctamente" });
+        return res.json({ ok: true, message: "Cupón eliminado correctamente", data:result });
     } catch (e: any) {
         return res.status(500).json({ ok: false, error: e.message || "Error al eliminar cupón" });
     }
 })
 
+router.delete("/delete/:code", async (req, res) => {
+    try {
+        const { code } = req.params
+
+        const result = await prisma.coupon.delete({
+            where: { code }
+        });
+
+        return res.json({
+            ok: true,
+            message: "Cupón eliminado correctamente",
+            data: result
+        });
+
+    } catch (e: any) {
+        return res.status(500).json({
+            ok: false,
+            error: e.message || "Error al eliminar cupón"
+        });
+    }
+});
 
 export default router;

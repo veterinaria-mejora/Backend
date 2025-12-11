@@ -10,7 +10,6 @@ const APP_BASE_URL = process.env.APP_BASE_URL
 // -- te autentica en base a la cookie
 router.get("/authMe", async (req, res) => {
     const token = req.cookies.auth_token;
-    console.log(token)
     if (!token) {
         return res.status(401).json({ ok: false, error: "no autenticado" });
     }
@@ -81,8 +80,7 @@ router.post("/register", async (req, res) => {
 
     res.status(200).json({ ok: true, data: { id: user.id, email } });
   } catch (e: any) {
-    console.log(e)
-    console.log("askdjasjkdhajksdhkajsh")
+
     res.status(400).json({ ok: false, error: e.message || "error en registro" });
   }
 })
@@ -117,7 +115,6 @@ router.delete("/delete/:id", async (req, res) => {
         return res.status(400).json({ ok: false, error: "No se pudo eliminar el usuario" });
     }
 })
-
 // -- te loguea 
 router.post("/login", async (req, res) => {
     try {
@@ -158,7 +155,7 @@ router.post("/forgot-password", async (req, res) => {
          if (!APP_BASE_URL) throw new Error("APP_BASE_URL no definida")
 
         const base = APP_BASE_URL.replace(/\/$/, "");
-        const resetUrl = `http://127.0.0.1:5500/frontend/vistas/adopciones/adopciones.html`;
+        const resetUrl = `http://127.0.0.1:5500/frontend/vistas/recuperarContraseña/changePassword.html`;
         const sent = await sendPasswordResetEmail(email, token, resetUrl);
         console.log("forgot sent:", sent," ",token)
 

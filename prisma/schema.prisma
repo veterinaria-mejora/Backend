@@ -184,7 +184,7 @@ model coupon {
   id     Int     @id @default(autoincrement())
   code   String  @unique
   active Boolean @default(true)
-  discount Int 
+  discount Int?
 
   @@map("coupons")
 }

@@ -42,10 +42,10 @@ router.patch("/use",async (req,res)=>{
         const newstate = await prisma.coupon.update({
             where: { code: validate.code },
             data: { active: false },
-            select: { code: true, active: true }
+            select: { discount:true}
         })
 
-        return res.status(201).json({ ok: true, data:  {validate, newstate} })
+        return res.status(201).json({ ok: true, data: newstate })
     } catch (error) {
         return res.status(500).json({ok:false, error:"cupon invalido"})
     }

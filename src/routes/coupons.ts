@@ -54,7 +54,7 @@ router.patch("/use",async (req,res)=>{
 // -- añade un cupon inexistente
 router.post("/add", async (req, res) => {
   try {
-    const { code } = req.body;
+    const { code, discount } = req.body;
     
     if (!code || typeof code !== "string") {
       return res.status(400).json({ ok: false, error: "Código de cupón requerido" });
@@ -64,6 +64,7 @@ router.post("/add", async (req, res) => {
       const coupon = await prisma.coupon.create({
         data: {
           code: code.trim().toLowerCase(),
+          discount:discount
         },
         select:{code:true}
       });
@@ -79,5 +80,30 @@ router.post("/add", async (req, res) => {
     res.status(500).json({ ok: false, error: e.message || "Error al crear cupón" });
   }
 })
+
+router.patch("/desAbility", async (req, res) => {
+    try {
+        const {code,state} = req.body
+
+        const result = await prisma.coupon.updateMany({
+            where: {
+                code: code,
+                active: state,
+            },
+            data: {
+                active: !state,
+            },
+        });
+
+        if (result.count === 0) {
+            return res.status(404).json({ ok: false, error: "Cupón no encontrado o ya inactivo" });
+        }
+
+        return res.json({ ok: true, message: "Cupón eliminado correctamente" });
+    } catch (e: any) {
+        return res.status(500).json({ ok: false, error: e.message || "Error al eliminar cupón" });
+    }
+})
+
 
 export default router;

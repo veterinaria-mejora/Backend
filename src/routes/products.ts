@@ -32,16 +32,13 @@ router.get("/", async (_req, res) => {
 
 //añade productos a la base de datos
 router.post("/addProduct", async (req,res)=>{
-    const {idproducto, nombre, precio, stock, url_imagen} = req.body
+    const { nombre, precio, stock, url_imagen } = req.body
     try {
-    const exist = await prisma.productos.findUnique({
-        where: {idproducto : idproducto }
-    })
-    if (exist) throw new Error("Producto ya añadido")
+
     
     const add = await prisma.productos.create({
         data:{
-            idproducto:idproducto,
+
             nombre:nombre,
             precio:precio,
             stock:stock,

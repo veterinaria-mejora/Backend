@@ -34,14 +34,12 @@ router.get("/", async (_req, res) => {
 router.post("/addProduct", async (req,res)=>{
     const { nombre, precio, stock, url_imagen } = req.body
     try {
-
-    
+        console.log(nombre,precio,stock,url_imagen)
     const add = await prisma.productos.create({
         data:{
-
             nombre:nombre,
-            precio:precio,
-            stock:stock,
+            precio:parseFloat(precio),
+            stock:parseInt(stock),
             url_imagen:url_imagen
         },
         select:{
@@ -49,13 +47,14 @@ router.post("/addProduct", async (req,res)=>{
             nombre:true
         }
     })
+    console.log(add);
     
     if (!add) throw new Error("error añadiendo producto")
 
     res.status(201).json( {ok:false, message:"se ha añadido el producto con exito", data: add})
 
     } catch (e:any) {
-        res.status(400).json( {ok:false, error:e.message})
+        res.status(500).json( {ok:false, error:e.message})
     }
     
 
